@@ -36,4 +36,53 @@ struct NewOrder
     friend std::ostream &operator<<(std::ostream &out, NewOrder const &no);
 } __attribute__((__packed__));
 
+struct OrderResponse
+{
+    static constexpr uint16_t MESSAGE_TYPE = 5;
+    enum class Status : uint16_t
+    {
+        ACCEPTED = 0,
+        REJECTED = 1,
+    };
+    Status status;
+    uint16_t messageType = MESSAGE_TYPE; // Message type of this message
+    uint64_t orderId;                    // Order id that refers to the original order id Status status; // Status of the order
+    friend std::ostream &operator<<(std::ostream &out, OrderResponse const &order_response);
+} __attribute__((__packed__));
+
+struct DeleteOrder
+{
+    static constexpr uint16_t MESSAGE_TYPE = 2;
+    uint16_t messageType = MESSAGE_TYPE; // Message type of this message
+    uint64_t orderId;                    // Order id that refers to the original order id
+    DeleteOrder() {}
+    DeleteOrder(uint64_t orderId_) : orderId(orderId_) {}
+} __attribute__((__packed__));
+
+struct ModifyOrderQuantity
+{
+    static constexpr uint16_t MESSAGE_TYPE = 3;
+    uint16_t messageType = MESSAGE_TYPE; // Message type of this message
+    uint64_t orderId;                    // Order id that refers to the original order id
+    uint64_t newQuantity;                // The new quantity
+
+    ModifyOrderQuantity() {}
+    ModifyOrderQuantity(uint64_t orderID_, uint64_t newQuantity_)
+        : orderId(orderID_), newQuantity(newQuantity_) {}
+
+} __attribute__((__packed__));
+
+struct Trade
+{
+    static constexpr uint16_t MESSAGE_TYPE = 4;
+    uint16_t messageType = MESSAGE_TYPE; // Message type of this message
+    uint64_t listingId;                  // Financial instrument id associated to this message
+    uint64_t tradeId;                    // Order id that refers to the original order id
+    uint64_t tradeQuantity;              // Trade quantity
+    uint64_t tradePrice;                 // Trade price, the price contains 4 implicit decimals
+    Trade() {}
+    Trade(uint64_t listingId_, uint64_t tradeId_, uint64_t tradeQuantity_, uint64_t tradePrice_)
+        : listingId(listingId_), tradeId(tradeId_), tradeQuantity(tradeQuantity_), tradePrice(tradePrice_) {}
+} __attribute__((__packed__));
+
 #endif // !MESSAGE_H

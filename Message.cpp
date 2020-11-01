@@ -123,3 +123,12 @@ std::ostream &operator<<(std::ostream &out, NewOrder const &no)
         << "side: " << no.side << std::endl;
     return out;
 }
+
+/* Implementation of OrderResponse class */
+std::ostream &operator<<(std::ostream &out, OrderResponse const &order_response)
+{
+    out
+        << "OrderID: " << order_response.orderId << ' '
+        << "Status: " << (order_response.status == OrderResponse::Status::ACCEPTED ? "accepted" : "rejected") << std::endl;
+    return out;
+}
