@@ -12,17 +12,35 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "Message.h"
+#include "Portfolio.h"
 
-void dostuff(int); /* function prototype */
-void read_header(int);
 void error(const char *msg)
 {
     perror(msg);
-    exit(1);
+    exit(0);
+}
+void send_buffer(uint8_t *buffer, int sockfd)
+{
+    // Send buffer
+    int n = write(sockfd, buffer, 64);
+    if (n < 0)
+        error("ERROR writing to socket");
 }
 
+void recive_buffer(uint8_t *buffer, int sockfd)
+{
+    // Recive response.
+    bzero(buffer, 64);
+    int n = read(sockfd, buffer, 64);
+    if (n < 0)
+        error("ERROR reading from socket");
+}
+
+void dostuff(int); /* function prototype */
+void handle_message(int sock);
 int main(int argc, char *argv[])
 {
+    /* Establish TCP connection. */
     int sockfd, newsockfd, portno;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
@@ -48,11 +66,13 @@ int main(int argc, char *argv[])
     if (newsockfd < 0)
         error("ERROR on accept");
     close(sockfd);
-    while (true)
-    {
-        // dostuff(newsockfd);
-        read_header(newsockfd);
-    } /* end of while */
+
+    /* Recive buy and sell thresholds. */
+    // while (true)
+    // {
+    // dostuff(newsockfd);
+    handle_message(newsockfd);
+    // } /* end of while */
     close(newsockfd);
     return 0; /* we never get here */
 }
@@ -77,20 +97,32 @@ void dostuff(int sock)
         error("ERROR writing to socket");
 }
 
-void read_header(int sock)
+void handle_message(int sock)
 {
-    int n;
-    uint8_t buffer_size = 16;
+    // int n;
+    uint8_t buffer_size = 64;
     uint8_t buffer[buffer_size];
     bzero(buffer, buffer_size);
+    recive_buffer(buffer, sock);
+    Threshold threshold;
+    threshold.deserialize(buffer);
+    Portfolio portfolio(threshold.buy_threshold, threshold.sell_threshold);
 
-    n = read(sock, buffer, buffer_size);
-    if (n < 0)
-        error("ERROR reading from socket");
-    Header h1;
-    h1.deserialize(buffer);
-    std::cout << h1;
-    n = write(sock, "I got your message", 18);
-    if (n < 0)
-        error("ERROR writing to socket");
+    // while (true)
+    // {
+    // }
+    std::cout << threshold;
+    // recive_buffer(buffer, sock);
+    // Header header1;
+    // NewOrder order1;
+    // header1.deserialize(buffer);
+    // order1.deserialize(buffer);
+
+    // std::cout << header1;
+    // std::cout << order1;
+
+    // send_buffer("I got your message", sock);
+    // n = write(sock, "I got your message", 18);
+    // if (n < 0)
+    // error("ERROR writing to socket");
 }
