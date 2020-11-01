@@ -168,6 +168,22 @@ std::ostream &operator<<(std::ostream &out, OrderResponse const &order_response)
 {
     out
         << "OrderID: " << order_response.orderId << ' '
-        << "Status: " << (order_response.status == OrderResponse::Status::ACCEPTED ? "accepted" : "rejected") << std::endl;
+        << "Status: " << (order_response.status == 0 ? "accepted" : "rejected") << std::endl;
     return out;
+}
+
+bool OrderResponse::serialize(uint8_t *buffer, uint8_t start_idx) const
+{
+    copy_to_buffer(buffer, start_idx, status);
+    copy_to_buffer(buffer, start_idx, messageType);
+    copy_to_buffer(buffer, start_idx, orderId);
+    return true;
+}
+bool OrderResponse::deserialize(uint8_t const *buffer, uint8_t start_idx)
+{
+
+    decode_from_buffer(buffer, start_idx, status);
+    decode_from_buffer(buffer, start_idx, messageType);
+    decode_from_buffer(buffer, start_idx, orderId);
+    return true;
 }
