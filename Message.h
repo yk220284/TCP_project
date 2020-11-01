@@ -1,3 +1,9 @@
+/*
+    Message.h
+    1. Contains structs of various message types.
+    2. Implementation of member functions, mainly for serialisation of object 
+        into bytes and deserialisation back to object, can be found in Message.cpp.
+*/
 #include <stdint.h>
 #include <iostream>
 #include <unistd.h>
@@ -45,7 +51,8 @@ struct NewOrder
     uint64_t orderPrice;                 // Order price, the price contains 4 implicit decimals
     char side;                           // The side of the order, 'B' for buy and 'S' for sell
     NewOrder() {}
-    NewOrder(uint64_t listingId_, uint64_t orderId_, uint64_t orderQuantity_, uint64_t orderPrice_, char side_) : listingId(listingId_), orderId(orderId_), orderQuantity(orderQuantity_), orderPrice(orderPrice_), side(side_) {}
+    NewOrder(uint64_t listingId_, uint64_t orderId_, uint64_t orderQuantity_, uint64_t orderPrice_, char side_)
+        : listingId(listingId_), orderId(orderId_), orderQuantity(orderQuantity_), orderPrice(orderPrice_), side(side_) {}
     bool serialize(uint8_t *buffer, uint8_t start_idx = 16) const;
     bool deserialize(uint8_t const *buffer, uint8_t start_idx = 16);
     friend std::ostream &operator<<(std::ostream &out, NewOrder const &no);
@@ -54,15 +61,17 @@ struct NewOrder
 struct OrderResponse
 {
     static constexpr uint16_t MESSAGE_TYPE = 5;
-    enum class Status : uint16_t
-    {
-        ACCEPTED = 0,
-        REJECTED = 1,
-    };
-    Status status;
+    // enum class Status : uint16_t
+    // {
+    //     ACCEPTED = 0,
+    //     REJECTED = 1,
+    // };
+    uint16_t status;
     uint16_t messageType = MESSAGE_TYPE; // Message type of this message
     uint64_t orderId;                    // Order id that refers to the original order id Status status; // Status of the order
     friend std::ostream &operator<<(std::ostream &out, OrderResponse const &order_response);
+    bool serialize(uint8_t *buffer, uint8_t start_idx = 16) const;
+    bool deserialize(uint8_t const *buffer, uint8_t start_idx = 16);
 } __attribute__((__packed__));
 
 struct DeleteOrder
@@ -80,7 +89,6 @@ struct ModifyOrderQuantity
     uint16_t messageType = MESSAGE_TYPE; // Message type of this message
     uint64_t orderId;                    // Order id that refers to the original order id
     uint64_t newQuantity;                // The new quantity
-
     ModifyOrderQuantity() {}
     ModifyOrderQuantity(uint64_t orderID_, uint64_t newQuantity_)
         : orderId(orderID_), newQuantity(newQuantity_) {}
