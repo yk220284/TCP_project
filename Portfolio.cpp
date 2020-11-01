@@ -20,11 +20,13 @@ OrderResponse Portfolio::place_order(NewOrder const &new_order)
                                            target_stock.buy_qty + new_order.orderQuantity);
         if (buy_hypo_worst > buy_threshold)
         {
-            resp.status = OrderResponse::Status::REJECTED;
+            //     resp.status = OrderResponse::Status::REJECTED;
+            resp.status = 1;
         }
         else
         {
-            resp.status = OrderResponse::Status::ACCEPTED;
+            // resp.status = OrderResponse::Status::ACCEPTED;
+            resp.status = 0;
             target_stock.buy_qty += new_order.orderQuantity;
             orders[new_order.orderId] = new_order;
         }
@@ -36,11 +38,13 @@ OrderResponse Portfolio::place_order(NewOrder const &new_order)
                                             target_stock.sell_qty + new_order.orderQuantity);
         if (sell_hypo_worst > sell_threshold)
         {
-            resp.status = OrderResponse::Status::REJECTED;
+            // resp.status = OrderResponse::Status::REJECTED;
+            resp.status = 1;
         }
         else
         {
-            resp.status = OrderResponse::Status::ACCEPTED;
+            // resp.status = OrderResponse::Status::ACCEPTED;
+            resp.status = 0;
             target_stock.sell_qty += new_order.orderQuantity;
             orders[new_order.orderId] = new_order;
         }
