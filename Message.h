@@ -1,8 +1,23 @@
 #include <stdint.h>
 #include <iostream>
-#include <stdexcept>
+#include <unistd.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
+
+struct Threshold
+{
+    uint64_t buy_threshold;
+    uint64_t sell_threshold;
+
+    Threshold() {}
+    Threshold(uint64_t buy_threshold_, uint64_t sell_threshold_)
+        : buy_threshold(buy_threshold_), sell_threshold(sell_threshold_) {}
+    bool serialize(uint8_t *buffer, uint8_t start_idx = 0) const;
+    bool deserialize(uint8_t const *buffer, uint8_t start_idx = 0);
+    friend std::ostream &operator<<(std::ostream &out, Threshold const &th);
+    /* Get threshold from cli. */
+    void get_threshold();
+} __attribute__((__packed__));
 
 struct Header
 {

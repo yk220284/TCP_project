@@ -48,7 +48,6 @@ void copy_to_buffer(uint8_t *buffer, uint8_t &start_idx, const T &data)
 {
     memcpy(buffer + start_idx, int64_to_bytes(data).data() + (8 - sizeof(data)), sizeof(data));
     start_idx += sizeof(data);
-    std::cout << (int)start_idx << std::endl;
 }
 
 template <class T>
@@ -56,6 +55,46 @@ void decode_from_buffer(uint8_t const *buffer, uint8_t &start_idx, T &data)
 {
     data = bytes_to_int64(buffer, start_idx, sizeof(data));
     start_idx += sizeof(data);
+}
+
+/* Implementation of Threshold class */
+bool Threshold::serialize(uint8_t *buffer, uint8_t start_idx) const
+{
+    copy_to_buffer(buffer, start_idx, buy_threshold);
+    copy_to_buffer(buffer, start_idx, sell_threshold);
+    return true;
+}
+bool Threshold::deserialize(uint8_t const *buffer, uint8_t start_idx)
+{
+    decode_from_buffer(buffer, start_idx, buy_threshold);
+    decode_from_buffer(buffer, start_idx, sell_threshold);
+    return true;
+}
+std::ostream &operator<<(std::ostream &out, Threshold const &th)
+{
+    out << "Buy threshold: " << th.buy_threshold << std::endl;
+    out << "Sell threshold: " << th.sell_threshold << std::endl;
+    return out;
+}
+
+void Threshold::get_threshold()
+{
+    char confirm = 'n';
+    char buy_threshold_buffer[8];
+    char sell_threshold_buffer[8];
+    do
+    {
+
+        std::cout << "Input buy threshold: ";
+        std::cin >> buy_threshold_buffer;
+        std::cout << "Input sell threshold: ";
+        std::cin >> sell_threshold_buffer;
+        buy_threshold = std::stol(buy_threshold_buffer);
+        sell_threshold = std::stol(sell_threshold_buffer);
+        std::cout << "Buy threshold: " << buy_threshold << ' ' << "Sell threshold: " << sell_threshold << std::endl
+                  << "Comfirm? (press 'y') ";
+        std::cin >> confirm;
+    } while (confirm != 'y');
 }
 
 /* Implementation of Header class */
