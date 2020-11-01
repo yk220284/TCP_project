@@ -1,5 +1,8 @@
-// #include <stdio.h>
-// #include <stdlib.h>
+/*
+    client.cpp
+    1. Build a TCP connection to a server, a machine alias and port number is required.
+    2. After the connection is established, use client_process to demonstrate the transmission of data.
+*/
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
@@ -8,26 +11,24 @@
 #include <netdb.h>
 #include "Message.h"
 
+const int BYTE_SIZE = 64; //Maximum bytes needed for all messages
 enum STOCKS
 {
     FLOW,
     OTHER,
 };
-
 void error(const char *msg)
 {
     perror(msg);
     exit(0);
 }
-
 void send_buffer(uint8_t *buffer, int sockfd)
 {
     // Send buffer
-    int n = write(sockfd, buffer, 64);
+    int n = write(sockfd, buffer, BYTE_SIZE);
     if (n < 0)
         error("ERROR writing to socket");
 }
-
 void recive_buffer(uint8_t *buffer, int sockfd)
 {
     // Recive response.
@@ -35,18 +36,7 @@ void recive_buffer(uint8_t *buffer, int sockfd)
     if (n < 0)
         error("ERROR reading from socket");
 }
-
-void process(int sockfd)
-{
-    int order_id = 0;
-    int sequence_num = 0;
-    uint8_t buffer[64];
-    Header hearder1(AF_INET, 35, sequence_num++); //NewOrder is size 35;
-    NewOrder order1(FLOW, order_id++, 15, 1500, 's');
-    hearder1.serialize(buffer);
-    order1.serialize(buffer);
-    send_buffer(buffer, sockfd);
-}
+void client_process(int sockfd);
 
 int main(int argc, char *argv[])
 {
@@ -76,16 +66,39 @@ int main(int argc, char *argv[])
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
+    /* Mock sending an order message then recive a response object */
+    client_process(sockfd);
+
+    close(sockfd);
+    return 0;
+}
+
+void client_process(int sockfd)
+{
     /* Sending buy and sell thresholds. */
-    uint8_t buffer[16];
+    uint8_t buffer[BYTE_SIZE];
     Threshold threshold;
     threshold.get_threshold();
     threshold.serialize(buffer);
     send_buffer(buffer, sockfd);
-    // process(sockfd);
-    // while (1)
-    // {
 
-    close(sockfd);
-    return 0;
+    /* Sending a sell order. */
+    int order_id = 0;
+    int sequence_num = 0;
+    Header send_header(AF_INET, 35, sequence_num++); //NewOrder is size 35;
+    NewOrder send_order(FLOW, order_id++, 15, 1500, 's');
+    send_header.serialize(buffer);
+    send_order.serialize(buffer);
+    send_buffer(buffer, sockfd);
+
+    /* Reciving the reponse regarding that order. */
+    recive_buffer(buffer, sockfd);
+    Header recived_header;
+    OrderResponse order_response;
+    recived_header.deserialize(buffer);
+    order_response.deserialize(buffer);
+    std::cout << "----Recived header info----\n";
+    std::cout << recived_header;
+    std::cout << "----Recive order_response info----\n";
+    std::cout << order_response;
 }
